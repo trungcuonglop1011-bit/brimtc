@@ -1,0 +1,1435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brimstone Molly Lineup — Kiếm Hiệp Vụ</title>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=Noto+Serif+SC:wght@500;700&display=swap');
+
+        :root {
+            --bg-dark: #070a10;
+            --bg-card: #121824;
+            --bg-hover: #1b2436;
+            --accent-gold: #f3d060;
+            --accent-gold-light: #fff5c0;
+            --accent-crimson: #d93838;
+            --text-main: #f5f2eb;
+            --text-muted: #9aa8bc;
+            --border-color: #2a3852;
+            --border-gold: #f3d06077;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background-image: radial-gradient(circle at 50% 10%, #17223b 0%, #070a10 100%);
+        }
+
+        /* Header Cổ Trang Hoàng Gia */
+        header {
+            background-color: #0b0f17;
+            border-bottom: 3px double var(--accent-gold);
+            padding: 14px 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 25px rgba(0,0,0,0.9);
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            cursor: pointer;
+        }
+
+        .brand-badge {
+            background: linear-gradient(135deg, #f3d060, #a8841a);
+            color: #070a10;
+            font-weight: 800;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            letter-spacing: 2px;
+            font-family: 'Cinzel', serif;
+            box-shadow: 0 0 15px rgba(243,208,96,0.6);
+            border: 1px solid #fff5c0;
+        }
+
+        .brand h1 {
+            font-family: 'Cinzel', serif;
+            font-size: 20px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--accent-gold-light);
+            text-shadow: 0 2px 6px rgba(0,0,0,0.9);
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        button {
+            background-color: var(--bg-card);
+            color: var(--text-main);
+            border: 1px solid var(--border-gold);
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            box-shadow: inset 0 0 5px rgba(243,208,96,0.1);
+        }
+
+        button:hover {
+            background-color: var(--bg-hover);
+            border-color: var(--accent-gold);
+            color: var(--accent-gold-light);
+            box-shadow: 0 0 12px rgba(243,208,96,0.4), inset 0 0 8px rgba(243,208,96,0.2);
+        }
+
+        button.primary {
+            background: linear-gradient(135deg, var(--accent-crimson), #922222);
+            border-color: #f3d060cc;
+            color: #fff;
+        }
+
+        button.primary:hover {
+            background: linear-gradient(135deg, #e84545, #b22d2d);
+            border-color: var(--accent-gold);
+            box-shadow: 0 0 15px rgba(217,56,56,0.6);
+        }
+
+        /* Nút Edit tổng trên Header */
+        #btn-edit-maps.active-edit {
+            background: linear-gradient(135deg, var(--accent-gold), #a8841a);
+            color: #070a10;
+            border-color: #fff5c0;
+            box-shadow: 0 0 12px rgba(243, 208, 96, 0.7);
+        }
+
+        /* Hiệu ứng Liquid Glass cho các nút ở Minimap Toolbar */
+        .liquid-glass-btn {
+            background: rgba(18, 24, 36, 0.45) !important;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(243, 208, 96, 0.35) !important;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37), inset 0 0 10px rgba(255, 255, 255, 0.05);
+            color: var(--text-main) !important;
+            transition: all 0.3s ease;
+        }
+
+        .liquid-glass-btn:hover {
+            background: rgba(243, 208, 96, 0.2) !important;
+            border-color: var(--accent-gold) !important;
+            color: var(--accent-gold-light) !important;
+            box-shadow: 0 8px 32px 0 rgba(243, 208, 96, 0.25), inset 0 0 15px rgba(243, 208, 96, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .liquid-glass-btn.primary-glass {
+            background: rgba(217, 56, 56, 0.45) !important;
+            border-color: rgba(243, 208, 96, 0.6) !important;
+        }
+
+        .liquid-glass-btn.primary-glass:hover {
+            background: rgba(217, 56, 56, 0.7) !important;
+        }
+
+        /* Breadcrumb Hoàng Gia */
+        .nav-bar {
+            padding: 14px 32px;
+            background-color: #0d131f;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+        }
+
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            font-size: 18px;
+            font-family: 'Cinzel', serif;
+            letter-spacing: 3px;
+        }
+
+        .breadcrumb span.active {
+            color: var(--accent-gold);
+            font-weight: 800;
+            text-shadow: 0 0 15px rgba(243,208,96,0.7);
+        }
+
+        /* Container */
+        main {
+            flex: 1;
+            padding: 28px 32px;
+            max-width: 1600px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* VIEW 1: MAP GRID */
+        .map-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+        }
+
+        @media (max-width: 1024px) {
+            .map-grid { grid-template-columns: repeat(3, 1fr); }
+        }
+        @media (max-width: 768px) {
+            .map-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        .map-card {
+            position: relative;
+            height: 190px;
+            background-color: var(--bg-card);
+            border: 2px solid var(--border-color);
+            border-radius: 6px;
+            overflow: hidden;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-size: cover;
+            background-position: center;
+            transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .map-card::before, .map-card::after {
+            content: '';
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            border-color: var(--accent-gold);
+            border-style: solid;
+            z-index: 3;
+            pointer-events: none;
+            opacity: 0.7;
+        }
+        .map-card::before { top: 6px; left: 6px; border-width: 2px 0 0 2px; }
+        .map-card::after { bottom: 6px; right: 6px; border-width: 0 2px 2px 0; }
+
+        .map-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--accent-gold);
+            box-shadow: 0 8px 25px rgba(243,208,96,0.3);
+        }
+
+        .map-card-title {
+            position: relative;
+            z-index: 2;
+            font-family: 'Cinzel', serif;
+            font-size: 24px;
+            font-weight: 800;
+            letter-spacing: 3px;
+            color: #fff;
+            text-shadow: 0 2px 6px rgba(0,0,0,0.95), 0 0 15px rgba(0,0,0,0.9);
+        }
+
+        .upload-corner-btn {
+            display: none;
+            position: absolute;
+            bottom: 8px;
+            right: 8px;
+            z-index: 3;
+            width: 24px;
+            height: 24px;
+            border-radius: 4px;
+            background-color: rgba(11, 15, 23, 0.9);
+            border: 1px solid var(--border-gold);
+            color: var(--accent-gold);
+            font-size: 14px;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+        }
+
+        .map-grid.edit-mode .upload-corner-btn {
+            display: flex;
+        }
+
+        .upload-corner-btn:hover {
+            background-color: var(--accent-gold);
+            color: #070a10;
+        }
+
+        /* VIEW 2: MINIMAP & TOOLBAR */
+        .minimap-workspace {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+            width: 100%;
+        }
+
+        .minimap-toolbar {
+            width: 75vw;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: rgba(18, 24, 36, 0.65);
+            backdrop-filter: blur(10px);
+            padding: 14px 20px;
+            border-radius: 6px;
+            border: 2px solid var(--border-gold);
+            gap: 12px;
+            flex-wrap: wrap;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+            position: relative;
+            z-index: 10;
+        }
+
+        .minimap-toolbar::before {
+            content: '❖';
+            color: var(--accent-gold);
+            font-size: 14px;
+            position: absolute;
+            left: 12px;
+        }
+        .minimap-toolbar::after {
+            content: '❖';
+            color: var(--accent-gold);
+            font-size: 14px;
+            position: absolute;
+            right: 12px;
+        }
+
+        .minimap-stage {
+            position: relative;
+            width: 75vw;
+            height: 75vw;
+            background-color: #0b0f17;
+            background-size: cover;
+            background-position: center;
+            border: 3px solid var(--border-gold);
+            border-radius: 6px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            user-select: none;
+            box-shadow: 0 15px 45px rgba(0,0,0,0.95);
+        }
+
+        .minimap-stage::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: rgba(7, 10, 16, 0.78);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            z-index: 1;
+        }
+
+        .minimap-canvas-wrapper {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2;
+        }
+
+        #minimap-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            pointer-events: none;
+        }
+
+        .minimap-empty-placeholder {
+            text-align: center;
+            color: var(--text-muted);
+            padding: 20px;
+            z-index: 3;
+            position: relative;
+        }
+
+        /* Plant Zone Polygon Overlay */
+        #zone-svg-layer {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 5;
+        }
+
+        .plant-zone-poly {
+            fill: rgba(243, 208, 96, 0.22);
+            stroke: var(--accent-gold);
+            stroke-width: 2;
+            stroke-dasharray: 6, 4;
+            cursor: crosshair;
+            transition: fill 0.15s;
+        }
+
+        .plant-zone-poly:hover {
+            fill: rgba(243, 208, 96, 0.38);
+        }
+
+        .drawing-zone-poly {
+            fill: rgba(217, 56, 56, 0.25);
+            stroke: var(--accent-crimson);
+            stroke-width: 2;
+        }
+
+        /* Spike Marker */
+        .spike-marker {
+            position: absolute;
+            transform: translate(-50%, -50%);
+            z-index: 10;
+            width: 26px;
+            height: 26px;
+            background-color: #0b0f17;
+            border: 2px solid var(--accent-gold);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 0 15px rgba(243,208,96,0.9);
+            transition: transform 0.15s ease;
+            overflow: hidden;
+        }
+
+        .spike-marker:hover {
+            transform: translate(-50%, -50%) scale(1.35);
+            border-color: #fff;
+            background-color: var(--accent-crimson);
+        }
+
+        .spike-marker svg {
+            width: 18px;
+            height: 18px;
+            fill: #ffffff;
+        }
+
+        /* VIEW 3: LINEUP GALLERY */
+        .lineup-container {
+            width: 92%;
+            max-width: 1380px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .lineup-top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--bg-card);
+            padding: 16px 24px;
+            border-radius: 6px;
+            border: 2px solid var(--border-gold);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.7);
+        }
+
+        .lineup-frame {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 20px 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            box-shadow: 0 4px 18px rgba(0,0,0,0.5);
+            position: relative;
+        }
+
+        .lineup-frame-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .lineup-title-input {
+            background: var(--bg-dark);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 8px 14px;
+            border-radius: 4px;
+            font-size: 15px;
+            font-weight: 600;
+            width: 380px;
+            max-width: 100%;
+        }
+
+        .lineup-title-input:focus {
+            outline: none;
+            border-color: var(--accent-gold);
+            box-shadow: 0 0 8px rgba(243,208,96,0.3);
+        }
+
+        .lineup-slots-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        @media (max-width: 850px) {
+            .lineup-slots-row { grid-template-columns: 1fr; }
+        }
+
+        .lineup-slot {
+            position: relative;
+            aspect-ratio: 16 / 9;
+            background-color: var(--bg-dark);
+            border: 2px dashed var(--border-color);
+            border-radius: 6px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            overflow: hidden;
+            transition: border-color 0.2s ease;
+        }
+
+        .lineup-slot:hover {
+            border-color: var(--accent-gold);
+            box-shadow: 0 0 10px rgba(243,208,96,0.2);
+        }
+
+        .lineup-slot.has-image {
+            border-style: solid;
+            border-color: var(--border-color);
+        }
+
+        .lineup-slot img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .slot-plus {
+            font-size: 36px;
+            color: var(--accent-gold);
+            line-height: 1;
+            text-shadow: 0 0 10px rgba(243,208,96,0.5);
+        }
+
+        .slot-caption {
+            margin-top: 6px;
+            font-size: 12px;
+            color: var(--text-muted);
+            letter-spacing: 1px;
+        }
+
+        .slot-actions {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            display: flex;
+            gap: 6px;
+            opacity: 0;
+            transition: opacity 0.15s;
+        }
+
+        .lineup-slot:hover .slot-actions {
+            opacity: 1;
+        }
+
+        .slot-action-btn {
+            background: rgba(11, 15, 23, 0.9);
+            color: #fff;
+            border: 1px solid var(--border-gold);
+            padding: 4px 8px;
+            font-size: 11px;
+            border-radius: 3px;
+        }
+
+        .slot-action-btn:hover {
+            background: var(--accent-crimson);
+        }
+
+        /* Khung Note */
+        .lineup-note-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .lineup-note-label {
+            font-family: 'Cinzel', serif;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--accent-gold);
+            letter-spacing: 1px;
+            min-width: 45px;
+            text-shadow: 0 0 8px rgba(243,208,96,0.4);
+        }
+
+        .lineup-note-input {
+            background: var(--bg-dark);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 9px 14px;
+            border-radius: 4px;
+            font-size: 13px;
+            flex: 1;
+        }
+
+        .lineup-note-input:focus {
+            outline: none;
+            border-color: var(--accent-gold);
+            box-shadow: 0 0 8px rgba(243,208,96,0.3);
+        }
+
+        /* Lightbox Slider Modal */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(7, 10, 16, 0.96);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+
+        .modal-content-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            max-width: 90vw;
+            max-height: 90vh;
+        }
+
+        .modal-overlay img {
+            max-width: 85vw;
+            max-height: 85vh;
+            border-radius: 6px;
+            border: 2px solid var(--accent-gold);
+            object-fit: contain;
+            box-shadow: 0 0 40px rgba(243,208,96,0.4);
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 20px;
+            right: 28px;
+            font-size: 32px;
+            color: var(--accent-gold);
+            background: none;
+            border: none;
+            cursor: pointer;
+            z-index: 1010;
+        }
+
+        .slider-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(18, 24, 36, 0.85);
+            color: var(--accent-gold);
+            border: 1px solid var(--border-gold);
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 1010;
+            transition: background 0.15s, color 0.15s;
+        }
+
+        .slider-btn:hover {
+            background: var(--accent-gold);
+            color: #070a10;
+        }
+
+        .slider-prev { left: -70px; }
+        .slider-next { right: -70px; }
+
+        .slider-counter {
+            position: absolute;
+            bottom: -35px;
+            color: var(--accent-gold);
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: 2px;
+            font-family: 'Cinzel', serif;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="brand" onclick="goHome()">
+        <span class="brand-badge">⚔ BRIMSTONE</span>
+        <h1>Brimstone Molly Lineup</h1>
+    </div>
+    <div class="header-actions">
+        <button id="btn-edit-maps" onclick="toggleMapEditMode()">✏ Edit</button>
+        <button onclick="triggerSpikeLogoUpload()">🎯 Edit logo Spike</button>
+        <button onclick="exportBackup()">Export(.json)</button>
+        <button onclick="document.getElementById('import-file').click()">Import	</button>
+        <input type="file" id="import-file" accept=".json" class="hidden" onchange="importBackup(event)">
+    </div>
+</header>
+
+<div class="nav-bar">
+    <div class="breadcrumb" id="breadcrumb"></div>
+</div>
+
+<main>
+    <!-- VIEW 1: MAP GRID -->
+    <section id="view-maps">
+        <div class="map-grid" id="map-grid"></div>
+    </section>
+
+    <!-- VIEW 2: MINIMAP & TOOLBAR -->
+    <section id="view-minimap" class="hidden">
+        <div class="minimap-workspace">
+            <div class="minimap-toolbar">
+                <button class="liquid-glass-btn" onclick="triggerMinimapUpload()">Minimap</button>
+                <button id="btn-draw-zone" class="liquid-glass-btn" onclick="toggleZoneDrawMode()">Draw Area [D]</button>
+                <button id="btn-finish-zone" class="liquid-glass-btn primary-glass hidden" onclick="finishZonePolygon()">Done [Enter]</button>
+                <button id="btn-clear-zones" class="liquid-glass-btn" onclick="clearMapZones()" style="color: #ff6b6b;">Delete [Delete]</button>
+                <button class="liquid-glass-btn" onclick="goBack()">Back [Esc]</button>
+            </div>
+
+            <div class="minimap-stage" id="minimap-stage-bg">
+                <div class="minimap-canvas-wrapper" id="minimap-wrapper">
+                    <img id="minimap-img" src="" alt="Minimap" class="hidden">
+                    <div id="minimap-empty" class="minimap-empty-placeholder">
+                        <p style="margin-bottom:12px; color: var(--text-muted);">Chưa có ảnh Minimap cho map này.</p>
+                        <button class="primary liquid-glass-btn" onclick="triggerMinimapUpload()">+ Tải ảnh Minimap lên</button>
+                    </div>
+                    <svg id="zone-svg-layer" viewBox="0 0 1000 1000" preserveAspectRatio="none"></svg>
+                    <div id="spikes-layer"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- VIEW 3: LINEUP GALLERY -->
+    <section id="view-lineups" class="hidden">
+        <div class="lineup-container">
+            <div class="lineup-top-bar">
+                <div>
+                    <h2 id="lineup-spike-title" style="font-size: 18px; font-family: 'Cinzel', serif; color: var(--accent-gold);">Molly Lineup List</h2>
+                    <p style="font-size: 12px; color: var(--text-muted); margin-top:4px;">(Standing pos — Crosshair aim — Result).</p>
+                </div>
+                <div style="display:flex; gap:10px;">
+                    <button onclick="deleteCurrentSpike()" style="color:#ff6b6b;">Delete this pos</button>
+                    <button class="primary" onclick="addLineupFrame()">+ Add</button>
+                </div>
+            </div>
+            <div id="lineup-frames-list" style="display:flex; flex-direction:column; gap:20px;"></div>
+        </div>
+    </section>
+</main>
+
+<!-- Hidden file inputs -->
+<input type="file" id="input-splash" accept="image/*" class="hidden">
+<input type="file" id="input-minimap" accept="image/*" class="hidden">
+<input type="file" id="input-slot" accept="image/*" class="hidden">
+<input type="file" id="input-spike-logo" accept="image/*" class="hidden">
+
+<!-- Lightbox Slider Modal -->
+<div id="lightbox" class="modal-overlay hidden" onclick="closeLightbox(event)">
+    <button class="modal-close" onclick="closeLightbox()">×</button>
+    <div class="modal-content-wrapper" onclick="event.stopPropagation()">
+        <button class="slider-btn slider-prev" onclick="slideImage(-1)">‹</button>
+        <img id="lightbox-img" src="" alt="Preview">
+        <button class="slider-btn slider-next" onclick="slideImage(1)">›</button>
+        <div class="slider-counter" id="slider-counter">1 / 3</div>
+    </div>
+</div>
+
+<script>
+    const MAP_NAMES = [
+        'ABYSS', 'ASCENT', 'BIND', 'CORRODE',
+        'FRACTURE', 'HAVEN', 'ICEBOX', 'LOTUS',
+        'PEARL', 'SPLIT', 'SUMMIT', 'SUNSET'
+    ].sort((a, b) => a.localeCompare(b));
+
+    let appData = { maps: {}, spikeLogo: '' };
+    let currentView = 'maps';
+    let selectedMap = null;
+    let selectedSpikeId = null;
+
+    let isDrawingZone = false;
+    let currentPolygonPoints = [];
+    let pendingSplashMap = null;
+    let pendingSlotTarget = null;
+    let isMapEditMode = false;
+
+    let activeLightboxImages = [];
+    let activeLightboxIndex = 0;
+
+    const DB_NAME = 'BrimstoneLineupDB_CN';
+    const STORE_NAME = 'vaultData';
+    let db = null;
+
+    // --- CẤU HÌNH FIREBASE ---
+    const firebaseConfig = {
+        apiKey: "AIzaSyDMf3rrIBBrpMh1SL3CNZQcHQxyeKQVgjA",
+  	authDomain: "brimstone-lineup.firebaseapp.com",
+  	projectId: "brimstone-lineup",
+  	storageBucket: "brimstone-lineup.firebasestorage.app",
+  	messagingSenderId: "659219678632",
+  	appId: "1:659219678632:web:44cf17ef2b7179a22e899d"
+    };
+
+    // Khởi tạo Firebase
+    firebase.initializeApp(firebaseConfig);
+    const dbRef = firebase.database().ref('brimstone_data/main');
+
+    // Hàm khởi tạo thay thế IndexedDB cũ
+    function initDB() {
+        return new Promise((resolve) => {
+            loadData().then(resolve);
+        });
+    }
+
+    // Hàm lưu dữ liệu tự động đồng bộ lên mây
+    function saveData() {
+        dbRef.set(appData).catch(err => {
+            console.error("Lỗi đồng bộ dữ liệu lên mây: ", err);
+        });
+    }
+
+    // Hàm tải dữ liệu từ mây về khi mở web
+    function loadData() {
+        return new Promise((resolve) => {
+            dbRef.once('value').then((snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    appData = data;
+                    if (!appData.spikeLogo) appData.spikeLogo = '';
+                }
+                ensureMapStructures();
+                resolve();
+            }).catch((err) => {
+                console.error("Lỗi tải dữ liệu: ", err);
+                ensureMapStructures();
+                resolve();
+            });
+        });
+    }            
+
+    function ensureMapStructures() {
+        MAP_NAMES.forEach(name => {
+            if (!appData.maps[name]) {
+                appData.maps[name] = { splash: '', minimap: '', zones: [], spikes: [] };
+            }
+            const m = appData.maps[name];
+            if (!Array.isArray(m.zones)) m.zones = [];
+            if (!Array.isArray(m.spikes)) m.spikes = [];
+        });
+    }
+
+    function processImageFile(file, maxWidth = 1800, quality = 0.9) {
+        return new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    let w = img.width;
+                    let h = img.height;
+                    if (w > maxWidth) {
+                        h = Math.round((h * maxWidth) / w);
+                        w = maxWidth;
+                    }
+                    canvas.width = w;
+                    canvas.height = h;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, w, h);
+                    resolve(canvas.toDataURL('image/jpeg', quality));
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+
+    function toggleMapEditMode() {
+        isMapEditMode = !isMapEditMode;
+        const btn = document.getElementById('btn-edit-maps');
+        const grid = document.getElementById('map-grid');
+        btn.classList.toggle('active-edit', isMapEditMode);
+        if (grid) grid.classList.toggle('edit-mode', isMapEditMode);
+    }
+
+    function triggerSpikeLogoUpload() {
+        document.getElementById('input-spike-logo').click();
+    }
+
+    document.getElementById('input-spike-logo').addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const dataUrl = await processImageFile(file, 300, 0.9);
+        appData.spikeLogo = dataUrl;
+        saveData();
+        if (currentView === 'minimap') {
+            renderZonesAndSpikes();
+        }
+        alert('Đã cập nhật logo Spike thành công!');
+        e.target.value = '';
+    });
+
+    function switchView(viewName) {
+        currentView = viewName;
+        isDrawingZone = false;
+        currentPolygonPoints = [];
+        updateZoneDrawButtons();
+
+        document.getElementById('view-maps').classList.toggle('hidden', viewName !== 'maps');
+        document.getElementById('view-minimap').classList.toggle('hidden', viewName !== 'minimap');
+        document.getElementById('view-lineups').classList.toggle('hidden', viewName !== 'lineups');
+
+        const editBtn = document.getElementById('btn-edit-maps');
+        if (editBtn) {
+            editBtn.classList.toggle('hidden', viewName !== 'maps');
+        }
+
+        renderBreadcrumb();
+
+        if (viewName === 'maps') renderMapsGrid();
+        if (viewName === 'minimap') renderMinimapView();
+        if (viewName === 'lineups') renderLineupsView();
+    }
+
+    function goHome() {
+        selectedMap = null;
+        selectedSpikeId = null;
+        switchView('maps');
+    }
+
+    function goBack() {
+        if (currentView === 'lineups') {
+            selectedSpikeId = null;
+            switchView('minimap');
+        } else if (currentView === 'minimap') {
+            selectedMap = null;
+            switchView('maps');
+        }
+    }
+
+    function renderBreadcrumb() {
+        const bc = document.getElementById('breadcrumb');
+        let html = '';
+        if (selectedMap) {
+            html += `<span class="active">${selectedMap}</span>`;
+        }
+        bc.innerHTML = html;
+    }
+
+    function renderMapsGrid() {
+        const grid = document.getElementById('map-grid');
+        grid.innerHTML = '';
+        grid.classList.toggle('edit-mode', isMapEditMode);
+
+        MAP_NAMES.forEach(name => {
+            const mapObj = appData.maps[name];
+            const card = document.createElement('div');
+            card.className = 'map-card';
+            if (mapObj && mapObj.splash) {
+                card.style.backgroundImage = `url('${mapObj.splash}')`;
+            }
+            card.onclick = () => {
+                selectedMap = name;
+                switchView('minimap');
+            };
+            const title = document.createElement('div');
+            title.className = 'map-card-title';
+            title.textContent = name;
+
+            const plusBtn = document.createElement('button');
+            plusBtn.className = 'upload-corner-btn';
+            plusBtn.title = 'Tải ảnh nền cho ' + name;
+            plusBtn.textContent = '+';
+            plusBtn.onclick = (e) => {
+                e.stopPropagation();
+                pendingSplashMap = name;
+                document.getElementById('input-splash').click();
+            };
+
+            card.appendChild(title);
+            card.appendChild(plusBtn);
+            grid.appendChild(card);
+        });
+    }
+
+    document.getElementById('input-splash').addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (!file || !pendingSplashMap) return;
+        const dataUrl = await processImageFile(file, 1000, 0.85);
+        appData.maps[pendingSplashMap].splash = dataUrl;
+        saveData();
+        renderMapsGrid();
+        e.target.value = '';
+    });
+
+    function triggerMinimapUpload() {
+        document.getElementById('input-minimap').click();
+    }
+
+    document.getElementById('input-minimap').addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (!file || !selectedMap) return;
+        const dataUrl = await processImageFile(file, 1800, 0.92);
+        appData.maps[selectedMap].minimap = dataUrl;
+        saveData();
+        if (currentView === 'minimap') renderMinimapView();
+        e.target.value = '';
+    });
+
+    function renderMinimapView() {
+        const mapObj = appData.maps[selectedMap];
+        const imgEl = document.getElementById('minimap-img');
+        const emptyEl = document.getElementById('minimap-empty');
+        const stageBg = document.getElementById('minimap-stage-bg');
+
+        if (mapObj && mapObj.splash) {
+            stageBg.style.backgroundImage = `url('${mapObj.splash}')`;
+        } else {
+            stageBg.style.backgroundImage = 'none';
+        }
+
+        if (mapObj.minimap) {
+            imgEl.src = mapObj.minimap;
+            imgEl.classList.remove('hidden');
+            emptyEl.classList.add('hidden');
+        } else {
+            imgEl.classList.add('hidden');
+            emptyEl.classList.remove('hidden');
+        }
+
+        renderZonesAndSpikes();
+    }
+
+    function toggleZoneDrawMode() {
+        if (!appData.maps[selectedMap].minimap) {
+            alert('Vui lòng tải ảnh minimap lên trước!');
+            return;
+        }
+        isDrawingZone = !isDrawingZone;
+        currentPolygonPoints = [];
+        updateZoneDrawButtons();
+        renderZonesAndSpikes();
+    }
+
+    function updateZoneDrawButtons() {
+        const btnDraw = document.getElementById('btn-draw-zone');
+        const btnFinish = document.getElementById('btn-finish-zone');
+        if (isDrawingZone) {
+            btnDraw.textContent = 'Cancle [D]';
+            btnFinish.classList.remove('hidden');
+        } else {
+            btnDraw.textContent = 'Draw Area [D]';
+            btnFinish.classList.add('hidden');
+        }
+    }
+
+    function finishZonePolygon() {
+        if (currentPolygonPoints.length < 3) {
+            alert('Need at least three points to draw!');
+            return;
+        }
+        const mapObj = appData.maps[selectedMap];
+        mapObj.zones.push([...currentPolygonPoints]);
+        saveData();
+        isDrawingZone = false;
+        currentPolygonPoints = [];
+        updateZoneDrawButtons();
+        renderMinimapView();
+    }
+
+    function clearMapZones() {
+        if (!confirm(`Delete all position ${selectedMap}?`)) return;
+        appData.maps[selectedMap].zones = [];
+        saveData();
+        renderMinimapView();
+    }
+
+    document.getElementById('zone-svg-layer').addEventListener('click', (e) => {
+        if (!isDrawingZone) return;
+        const rect = e.currentTarget.getBoundingClientRect();
+        const x = Math.round(((e.clientX - rect.left) / rect.width) * 1000);
+        const y = Math.round(((e.clientY - rect.top) / rect.height) * 1000);
+        currentPolygonPoints.push({ x, y });
+        renderZonesAndSpikes();
+    });
+
+    function renderZonesAndSpikes() {
+        const mapObj = appData.maps[selectedMap];
+        const svg = document.getElementById('zone-svg-layer');
+        const spikesLayer = document.getElementById('spikes-layer');
+        svg.innerHTML = '';
+        spikesLayer.innerHTML = '';
+
+        mapObj.zones.forEach((polyPoints) => {
+            const poly = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+            const pointsStr = polyPoints.map(p => `${p.x},${p.y}`).join(' ');
+            poly.setAttribute('points', pointsStr);
+            poly.setAttribute('class', 'plant-zone-poly');
+
+            poly.addEventListener('click', (e) => {
+                if (isDrawingZone) return;
+                e.stopPropagation();
+                const rect = svg.getBoundingClientRect();
+                const xPct = ((e.clientX - rect.left) / rect.width) * 100;
+                const yPct = ((e.clientY - rect.top) / rect.height) * 100;
+                createSpikeAt(xPct, yPct);
+            });
+
+            svg.appendChild(poly);
+        });
+
+        if (isDrawingZone && currentPolygonPoints.length > 0) {
+            const poly = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+            poly.setAttribute('points', currentPolygonPoints.map(p => `${p.x},${p.y}`).join(' '));
+            poly.setAttribute('class', 'drawing-zone-poly');
+            svg.appendChild(poly);
+
+            currentPolygonPoints.forEach(p => {
+                const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                circle.setAttribute('cx', p.x);
+                circle.setAttribute('cy', p.y);
+                circle.setAttribute('r', '6');
+                circle.setAttribute('fill', '#f3d060');
+                svg.appendChild(circle);
+            });
+        }
+
+        mapObj.spikes.forEach((spike) => {
+            const marker = document.createElement('div');
+            marker.className = 'spike-marker';
+            marker.style.left = `${spike.x}%`;
+            marker.style.top = `${spike.y}%`;
+            marker.title = `Xem lineup vị trí này`;
+
+            if (appData.spikeLogo) {
+                marker.innerHTML = `<img src="${appData.spikeLogo}" style="width: 100%; height: 100%; object-fit: cover; display: block;" />`;
+            } else {
+                marker.innerHTML = `
+                    <svg viewBox="0 0 24 24">
+                        <path d="M12 2.5C12.3 2.5 12.6 2.6 12.8 2.8L19.8 6.8C20.3 7.1 20.6 7.6 20.6 8.2V15.8C20.6 16.4 20.3 16.9 19.8 17.2L12.8 21.2C12.3 21.5 11.7 21.5 11.2 21.2L4.2 17.2C3.7 16.9 3.4 16.4 3.4 15.8V8.2C3.4 7.6 3.7 7.1 4.2 6.8L11.2 2.8C11.4 2.6 11.7 2.5 12 2.5ZM12 4.6L5.4 8.4V15.6L12 19.4L18.6 15.6V8.4L12 4.6ZM12 7.8C10.1 7.8 8.6 9.3 8.6 11.2C8.6 13.1 10.1 14.6 12 14.6C13.9 14.6 15.4 13.1 15.4 11.2C15.4 9.3 13.9 7.8 12 7.8ZM7 5.2L8.2 6.2L7 7.2L5.8 6.2L7 5.2ZM17 5.2L18.2 6.2L17 7.2L15.8 6.2L17 5.2ZM12 16.2L13.2 17.2L12 18.2L10.8 17.2L12 16.2Z"/>
+                    </svg>
+                `;
+            }
+
+            marker.onclick = (e) => {
+                e.stopPropagation();
+                selectedSpikeId = spike.id;
+                switchView('lineups');
+            };
+
+            spikesLayer.appendChild(marker);
+        });
+    }
+
+    function createSpikeAt(xPct, yPct) {
+        const mapObj = appData.maps[selectedMap];
+        const newSpike = {
+            id: 'spike_' + Date.now(),
+            x: xPct.toFixed(2),
+            y: yPct.toFixed(2),
+            frames: [
+                { id: 'frame_' + Date.now(), title: 'Lineup 1', note: '', slots: ['', '', ''] }
+            ]
+        };
+
+        mapObj.spikes.push(newSpike);
+        saveData();
+        renderZonesAndSpikes();
+    }
+
+    function renderLineupsView() {
+        const mapObj = appData.maps[selectedMap];
+        const spike = mapObj.spikes.find(sp => sp.id === selectedSpikeId);
+        if (!spike) return;
+
+        document.getElementById('lineup-spike-title').textContent = `${selectedMap} — Molly Lineup List`;
+        const listEl = document.getElementById('lineup-frames-list');
+        listEl.innerHTML = '';
+
+        const slotLabels = ['Lane Position', 'Aiming point', '3. Result'];
+
+        spike.frames.forEach((frame, fIndex) => {
+            const frameDiv = document.createElement('div');
+            frameDiv.className = 'lineup-frame';
+
+            const header = document.createElement('div');
+            header.className = 'lineup-frame-header';
+
+            const titleInput = document.createElement('input');
+            titleInput.type = 'text';
+            titleInput.className = 'lineup-title-input';
+            titleInput.value = frame.title;
+            titleInput.placeholder = 'Tên góc đứng (VD: Từ A Main...)';
+            titleInput.onchange = (e) => {
+                frame.title = e.target.value;
+                saveData();
+            };
+
+            const delFrameBtn = document.createElement('button');
+            delFrameBtn.textContent = 'Delete frame';
+            delFrameBtn.onclick = () => {
+                if (!confirm('Xóa khung lineup này?')) return;
+                spike.frames.splice(fIndex, 1);
+                saveData();
+                renderLineupsView();
+            };
+
+            header.appendChild(titleInput);
+            header.appendChild(delFrameBtn);
+
+            const slotsRow = document.createElement('div');
+            slotsRow.className = 'lineup-slots-row';
+
+            for (let i = 0; i < 3; i++) {
+                const slotDiv = document.createElement('div');
+                const imgData = frame.slots[i];
+                slotDiv.className = 'lineup-slot' + (imgData ? ' has-image' : '');
+
+                if (imgData) {
+                    const img = document.createElement('img');
+                    img.src = imgData;
+                    img.onclick = () => openLightbox(frame.slots, i);
+
+                    const actions = document.createElement('div');
+                    actions.className = 'slot-actions';
+
+                    const changeBtn = document.createElement('button');
+                    changeBtn.className = 'slot-action-btn';
+                    changeBtn.textContent = 'Đổi ảnh';
+                    changeBtn.onclick = (e) => {
+                        e.stopPropagation();
+                        pendingSlotTarget = { frameId: frame.id, slotIndex: i };
+                        document.getElementById('input-slot').click();
+                    };
+
+                    const clearBtn = document.createElement('button');
+                    clearBtn.className = 'slot-action-btn';
+                    clearBtn.textContent = 'Xóa';
+                    clearBtn.onclick = (e) => {
+                        e.stopPropagation();
+                        frame.slots[i] = '';
+                        saveData();
+                        renderLineupsView();
+                    };
+
+                    actions.appendChild(changeBtn);
+                    actions.appendChild(clearBtn);
+                    slotDiv.appendChild(img);
+                    slotDiv.appendChild(actions);
+                } else {
+                    slotDiv.innerHTML = `
+                        <div class="slot-plus">+</div>
+                        <div class="slot-caption">${slotLabels[i]}</div>
+                    `;
+                    slotDiv.onclick = () => {
+                        pendingSlotTarget = { frameId: frame.id, slotIndex: i };
+                        document.getElementById('input-slot').click();
+                    };
+                }
+
+                slotsRow.appendChild(slotDiv);
+            }
+
+            const noteWrapper = document.createElement('div');
+            noteWrapper.className = 'lineup-note-wrapper';
+
+            const noteLabel = document.createElement('span');
+            noteLabel.className = 'lineup-note-label';
+            noteLabel.textContent = 'Note';
+
+            const noteInput = document.createElement('input');
+            noteInput.type = 'text';
+            noteInput.className = 'lineup-note-input';
+            noteInput.value = frame.note || '';
+            noteInput.placeholder = '';
+            noteInput.onchange = (e) => {
+                frame.note = e.target.value;
+                saveData();
+            };
+
+            noteWrapper.appendChild(noteLabel);
+            noteWrapper.appendChild(noteInput);
+
+            frameDiv.appendChild(header);
+            frameDiv.appendChild(slotsRow);
+            frameDiv.appendChild(noteWrapper);
+            listEl.appendChild(frameDiv);
+        });
+    }
+
+    document.getElementById('input-slot').addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (!file || !pendingSlotTarget) return;
+        const dataUrl = await processImageFile(file, 1600, 0.88);
+        const mapObj = appData.maps[selectedMap];
+        const spike = mapObj.spikes.find(sp => sp.id === selectedSpikeId);
+        const frame = spike.frames.find(f => f.id === pendingSlotTarget.frameId);
+        if (frame) {
+            frame.slots[pendingSlotTarget.slotIndex] = dataUrl;
+            saveData();
+            renderLineupsView();
+        }
+        e.target.value = '';
+    });
+
+    function addLineupFrame() {
+        const mapObj = appData.maps[selectedMap];
+        const spike = mapObj.spikes.find(sp => sp.id === selectedSpikeId);
+        spike.frames.push({
+            id: 'frame_' + Date.now(),
+            title: `Lineup ${spike.frames.length + 1}`,
+            note: '',
+            slots: ['', '', '']
+        });
+        saveData();
+        renderLineupsView();
+    }
+
+    function deleteCurrentSpike() {
+        if (!confirm('Xóa vị trí Spike này cùng toàn bộ ảnh lineup bên trong?')) return;
+        const mapObj = appData.maps[selectedMap];
+        mapObj.spikes = mapObj.spikes.filter(sp => sp.id !== selectedSpikeId);
+        saveData();
+        goBack();
+    }
+
+    function openLightbox(slotsArray, startIndex = 0) {
+        activeLightboxImages = slotsArray.filter(img => img && img.trim() !== '');
+        if (activeLightboxImages.length === 0) return;
+        const targetImg = slotsArray[startIndex];
+        activeLightboxIndex = activeLightboxImages.indexOf(targetImg);
+        if (activeLightboxIndex === -1) activeLightboxIndex = 0;
+        updateLightboxView();
+        document.getElementById('lightbox').classList.remove('hidden');
+    }
+
+    function updateLightboxView() {
+        const imgEl = document.getElementById('lightbox-img');
+        const counterEl = document.getElementById('slider-counter');
+        imgEl.src = activeLightboxImages[activeLightboxIndex];
+        counterEl.textContent = `${activeLightboxIndex + 1} / ${activeLightboxImages.length}`;
+    }
+
+    function slideImage(direction) {
+        if (activeLightboxImages.length <= 1) return;
+        activeLightboxIndex += direction;
+        if (activeLightboxIndex < 0) {
+            activeLightboxIndex = activeLightboxImages.length - 1;
+        } else if (activeLightboxIndex >= activeLightboxImages.length) {
+            activeLightboxIndex = 0;
+        }
+        updateLightboxView();
+    }
+
+    function closeLightbox(e) {
+        if (e && e.target.id !== 'lightbox' && !e.target.classList.contains('modal-close')) return;
+        document.getElementById('lightbox').classList.add('hidden');
+    }
+
+    function exportBackup() {
+        const dataStr = JSON.stringify(appData);
+        const blob = new Blob([dataStr], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `brimstone-lineups-${new Date().toISOString().slice(0,10)}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+    }
+
+    function importBackup(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            try {
+                const parsed = JSON.parse(ev.target.result);
+                if (parsed && parsed.maps) {
+                    appData = parsed;
+                    if (!appData.spikeLogo) appData.spikeLogo = '';
+                    ensureMapStructures();
+                    saveData();
+                    goHome();
+                    alert('Khôi phục dữ liệu thành công!');
+                }
+            } catch (err) {
+                alert('File sao lưu không hợp lệ!');
+            }
+        };
+        reader.readAsText(file);
+        e.target.value = '';
+    }
+
+    window.addEventListener('keydown', (e) => {
+        const lightbox = document.getElementById('lightbox');
+        const isLightboxOpen = !lightbox.classList.contains('hidden');
+
+        if (isLightboxOpen) {
+            if (e.key === 'Escape') closeLightbox({ target: { id: 'lightbox' } });
+            else if (e.key === 'ArrowLeft') slideImage(-1);
+            else if (e.key === 'ArrowRight') slideImage(1);
+            return;
+        }
+
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+        if (e.key === 'Escape' && currentView !== 'maps') {
+            goBack();
+        }
+
+        if (currentView === 'minimap') {
+            if (e.key.toLowerCase() === 'd') {
+                toggleZoneDrawMode();
+            }
+            if (e.key === 'Enter' && isDrawingZone) {
+                finishZonePolygon();
+            }
+            if (e.key === 'Delete' || e.key === 'Backspace') {
+                if (!isDrawingZone) clearMapZones();
+            }
+        }
+    });
+
+    initDB().then(() => {
+        switchView('maps');
+    });
+</script>
+</body>
+</html>
